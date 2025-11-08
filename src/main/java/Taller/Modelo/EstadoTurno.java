@@ -1,3 +1,5 @@
+package Taller.Modelo;
+
 public enum EstadoTurno {
     PENDIENTE,
     EN_PROCESO,

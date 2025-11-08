@@ -1,3 +1,5 @@
+package Taller.Modelo;
+
 public abstract class Empleado {
     private int legajo;
     private String sector;

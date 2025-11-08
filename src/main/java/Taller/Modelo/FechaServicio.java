@@ -1,3 +1,5 @@
+package Taller.Modelo;
+
 public class FechaServicio {
     private String fechaCreacion;
 

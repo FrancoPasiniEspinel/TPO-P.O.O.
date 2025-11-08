@@ -1,3 +1,5 @@
+package Taller.Modelo;
+
 public class Repuesto {
     private String codigo;
     private String nombre;

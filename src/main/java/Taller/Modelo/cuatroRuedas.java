@@ -1,3 +1,5 @@
+package Taller.Modelo;
+
 public abstract class cuatroRuedas {
     private int cantPuertas;
     private boolean tieneAireAcondicionado;

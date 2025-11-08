@@ -1,3 +1,5 @@
+package Taller.Modelo;
+
 public class ItemRepuesto {
     private Repuesto repuesto;
     private int cantidad;

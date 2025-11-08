@@ -1,3 +1,5 @@
+package Taller.Modelo;
+
 public class Factura {
     private int idFactura;
     private String nombre;
