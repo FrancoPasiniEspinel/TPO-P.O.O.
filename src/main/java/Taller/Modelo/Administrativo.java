@@ -1,5 +1,10 @@
 package Taller.Modelo;
 
 public class Administrativo extends Empleado {
-    private int idAdministrativo;
+    private final int idAdministrativo;
+
+    public Administrativo(int legajo, String contraseña, String tipo, String nombre, String apellido, double costoHora, int idAdministrativo) {
+        super(legajo, contraseña, tipo, nombre, apellido, costoHora);
+        this.idAdministrativo = idAdministrativo;
+    }
 }

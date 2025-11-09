@@ -1,21 +1,23 @@
 package Taller.Modelo;
 
+import java.util.Date;
 import java.util.List;
+
 public class OrdenDeTrabajo {
 
     private int idTurno;
     private EstadoTurno estado;
-    private FechaServicio fechaServicio;
+    private Date fechaCreacion;
     private Vehiculo vehiculo;
     private Mecanico mecanicoAsignado;
     private String informeTecnico;
     private String diagnostico;
     private List<ItemRepuesto> repuestosUtilizados;
 
-    public OrdenDeTrabajo(int idTurno, EstadoTurno estado, FechaServicio fechaServicio, Vehiculo vehiculo, Mecanico mecanicoAsignado, String informeTecnico, String diagnostico, List<ItemRepuesto> repuestosUtilizados) {
+    public OrdenDeTrabajo(int idTurno, EstadoTurno estado, Date fechaCreacion, Vehiculo vehiculo, Mecanico mecanicoAsignado, String informeTecnico, String diagnostico, List<ItemRepuesto> repuestosUtilizados) {
         this.idTurno = idTurno;
         this.estado = estado;
-        this.fechaServicio = fechaServicio;
+        this.fechaCreacion = fechaCreacion;
         this.vehiculo = vehiculo;
         this.mecanicoAsignado = mecanicoAsignado;
         this.informeTecnico = informeTecnico;
@@ -39,12 +41,12 @@ public class OrdenDeTrabajo {
         this.estado = estado;
     }
 
-    public FechaServicio getFechaServicio() {
-        return fechaServicio;
+    public Date getFechaServicio() {
+        return fechaCreacion;
     }
 
-    public void setFechaServicio(FechaServicio fechaServicio) {
-        this.fechaServicio = fechaServicio;
+    public void setFechaServicio(Date fechaServicio) {
+        this.fechaCreacion = fechaServicio;
     }
 
     public Vehiculo getVehiculo() {

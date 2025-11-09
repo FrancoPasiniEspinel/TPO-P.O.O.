@@ -1,6 +1,6 @@
 package Taller.Modelo;
 
-public enum TipoDeTraccion {
+public enum TipoTraccionMoto {
     CADENA,
     CARDAN,
     CORREA,

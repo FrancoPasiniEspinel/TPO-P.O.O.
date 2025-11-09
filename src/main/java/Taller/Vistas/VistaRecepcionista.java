@@ -2,21 +2,16 @@ package Taller.Vistas;
 
 import Taller.Modelo.Cliente;
 import Taller.Modelo.Vehiculo;
-import Taller.Modelo.OrdenDeTrabajo; // Usamos OrdenDeTrabajo por la consistencia de tu proyecto
+import Taller.Modelo.OrdenDeTrabajo;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
-import java.awt.event.ActionListener;
 
-// La Vista debe recibir los Gestores (Controladores) cuando se inicialice
-// import Taller.Gestor.GestorClientes;
 // import Taller.Gestor.GestorOrdenes;
 
-public class vistaRecepcionista extends JFrame {
+public class VistaRecepcionista extends JFrame {
 
-    // DEPENDENCIAS (Se comentan para permitir solo el diseño visual)
-    // private final GestorClientes gestorClientes;
-    // private final GestorOrdenes gestorOrdenes;
+    private final GestorOrdenes gestorOrdenes;
 
     // Componentes de la GUI
     private JTabbedPane tabbedPane;
@@ -40,15 +35,14 @@ public class vistaRecepcionista extends JFrame {
     /**
      * Constructor enfocado solo en el diseño (sin inyección de dependencia para la visualización).
      */
-    public vistaRecepcionista(/* Gestores deberían ir aquí */) {
+    public VistaRecepcionista(/* Gestores deberían ir aquí */) {
         super("Módulo Recepcionista - Taller Mecánico");
 
         inicializarComponentes();
 
-        this.setSize(950, 680);
+        this.setSize(900, 650);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
-        this.setVisible(true);
         mostrarMenu();
     }
 
@@ -257,14 +251,4 @@ public class vistaRecepcionista extends JFrame {
     public Cliente buscarClientePorDni(String dni) { return null; } // Mapea a btnBuscarCliente
     public boolean registrarEntregaVehiculo(int idOrden) { return true; } // Mapea a btnEntrega
     public List<OrdenDeTrabajo> verHistorialCliente(int idCliente) { return null; } // Mapea a btnVerHistorial
-
-    // =================================================================================
-    // MAIN TEMPORAL PARA VER EL DISEÑO
-    // =================================================================================
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            // Lanza la vista de Recepcionista sin pasarle Gestores
-            new vistaRecepcionista();
-        });
-    }
 }

@@ -4,13 +4,13 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.regex.Pattern;
+import java.util.Optional;
 
 // Importar los Gestores necesarios
 // import Taller.Gestor.GestorInventario;
 // import Taller.Gestor.GestorFacturacion;
 
-public class vistaAdministrativo extends JFrame {
+public class VistaAdministrativo extends JFrame {
 
     // DEPENDENCIAS (Comentadas para solo diseño)
     // private final GestorInventario gestorInventario;
@@ -36,7 +36,7 @@ public class vistaAdministrativo extends JFrame {
     /**
      * Constructor enfocado solo en el diseño.
      */
-    public vistaAdministrativo(/* GestorInventario gi, GestorFacturacion gf */) {
+    public VistaAdministrativo(/* GestorInventario gi, GestorFacturacion gf */) {
         super("Módulo Administrativo - Finanzas e Inventario");
 
         inicializarComponentes();
@@ -44,7 +44,6 @@ public class vistaAdministrativo extends JFrame {
         this.setSize(900, 650);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
-        this.setVisible(true);
     }
 
     private void inicializarComponentes() {
@@ -80,8 +79,8 @@ public class vistaAdministrativo extends JFrame {
         tblRepuestosFaltantes = new JTable(modeloTablaRepuestos);
 
         // Simulación: Cargar filas para probar el borrado
-        modeloTablaRepuestos.addRow(new Object[]{"Filt-01", "Filtro Aceite", 5, 45.50, 227.50});
-        modeloTablaRepuestos.addRow(new Object[]{"Filt-02", "Filtro Aire", 10, 30.00, 300.00});
+        modeloTablaRepuestos.addRow(new Object[]{"Filt-01", "Filtro Aceite", (Object) 5, (Object) 45.50, (Object) 227.50});
+        modeloTablaRepuestos.addRow(new Object[]{"Filt-02", "Filtro Aire", (Object) 10, (Object) 30.00, (Object) 300.00});
 
         btnSolicitarPedido = new JButton("CONFIRMAR PEDIDO DE REPUESTOS");
         btnSolicitarPedido.setBackground(new Color(50, 150, 250));
@@ -165,8 +164,8 @@ public class vistaAdministrativo extends JFrame {
                     double precioUnitario = (double) modelo.getValueAt(i, 3);
                     double nuevoTotal = nuevoFaltante * precioUnitario;
 
-                    modelo.setValueAt(nuevoFaltante, i, 2);
-                    modelo.setValueAt(nuevoTotal, i, 4);
+                    modelo.setValueAt(Optional.of(nuevoFaltante), i, 2);
+                    modelo.setValueAt(Optional.of(nuevoTotal), i, 4);
                     JOptionPane.showMessageDialog(this, "Cantidad de repuesto " + codigoRecibido + " actualizada en la tabla. Faltan: " + nuevoFaltante, "Actualización Parcial", JOptionPane.INFORMATION_MESSAGE);
                 }
 
@@ -294,7 +293,7 @@ public class vistaAdministrativo extends JFrame {
     // =================================================================================
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            new vistaAdministrativo();
+            new VistaAdministrativo().setVisible(true);
         });
     }
 }

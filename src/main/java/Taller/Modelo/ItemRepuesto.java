@@ -1,8 +1,8 @@
 package Taller.Modelo;
 
 public class ItemRepuesto {
-    private Repuesto repuesto;
-    private int cantidad;
+    private final Repuesto repuesto;
+    private final int cantidad;
 
     public ItemRepuesto(Repuesto repuesto, int cantidad) {
         this.repuesto = repuesto;

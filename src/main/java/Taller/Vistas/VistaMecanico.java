@@ -4,7 +4,6 @@ import Taller.Modelo.OrdenDeTrabajo;
 import Taller.Modelo.Repuesto;
 import Taller.Modelo.Vehiculo; // Importar Vehiculo para mostrar la patente
 import Taller.Modelo.Mecanico; // Importar Mecanico para la simulación
-import Taller.Modelo.Cliente; // Importar Cliente para la simulación
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -16,7 +15,7 @@ import java.util.List;
 // import Taller.Gestor.GestorMecanico;
 // import Taller.Gestor.GestorInventario;
 
-public class vistaMecanico extends JFrame {
+public class VistaMecanico extends JFrame {
 
     // ** VARIABLE CRUCIAL: Almacena la orden que se está editando **
     private OrdenDeTrabajo ordenActiva = null;
@@ -61,15 +60,14 @@ public class vistaMecanico extends JFrame {
     }
 
 
-    public vistaMecanico(/* GestorMecanico gm, GestorInventario gi */) {
+    public VistaMecanico(/* GestorMecanico gm, GestorInventario gi */) {
         super("Módulo Mecánico - Gestión de Reparación");
 
         inicializarComponentes();
 
-        this.setSize(950, 750);
+        this.setSize(900, 650);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
-        this.setVisible(true);
     }
 
     private void inicializarComponentes() {
@@ -103,8 +101,8 @@ public class vistaMecanico extends JFrame {
 
         // Simulación: Cargar datos para el ejemplo
         DefaultTableModel modelo = (DefaultTableModel) tblOrdenesAsignadas.getModel();
-        modelo.addRow(new Object[]{101, "Juan Pérez", "ABC 999", "PENDIENTE"});
-        modelo.addRow(new Object[]{102, "Ana Gómez", "XYZ 555", "EN ESPERA"});
+        modelo.addRow(new Object[]{(Object) 101, "Juan Pérez", "ABC 999", "PENDIENTE"});
+        modelo.addRow(new Object[]{(Object) 102, "Ana Gómez", "XYZ 555", "EN ESPERA"});
 
         btnIniciarReparacion = new JButton("ACCEDER A LA REPARACIÓN SELECCIONADA");
         btnIniciarReparacion.setBackground(new Color(50, 150, 250));
@@ -141,7 +139,7 @@ public class vistaMecanico extends JFrame {
         this.ordenActiva = new OrdenSimulada(idOrden, "EN PROCESO", cliente, patente);
 
         // 2. Muestra la información de la orden activa en el panel de edición
-        String info = String.format("ORDEN ID %d | Cliente: %s | Patente: %s", idOrden, cliente, patente);
+        String info = "ORDEN ID " + idOrden + " | Cliente: " + cliente + " | Patente: " + patente;
         txtInfoOrden.setText(info);
 
         // 3. Cambia la vista al panel de edición
@@ -248,7 +246,7 @@ public class vistaMecanico extends JFrame {
     // =================================================================================
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            new vistaMecanico();
+            new VistaMecanico();
         });
     }
 }

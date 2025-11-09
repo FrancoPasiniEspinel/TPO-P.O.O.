@@ -1,6 +1,6 @@
 package Taller.Modelo;
 
-public enum TipoDeCombustible {
+public enum TipoCombustible {
     NAFTA,
     DIESEL,
     HIBRIDO,

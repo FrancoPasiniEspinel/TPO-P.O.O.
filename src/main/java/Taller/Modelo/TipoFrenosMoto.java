@@ -1,6 +1,6 @@
 package Taller.Modelo;
 
-public enum TipoDeFrenos {
+public enum TipoFrenosMoto {
     DISCO,
     TAMBOR,
 }

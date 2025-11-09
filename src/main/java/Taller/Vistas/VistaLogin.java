@@ -1,5 +1,7 @@
 package Taller.Vistas;
 
+import Taller.Controlador.ControladorLogin;
+
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
@@ -10,28 +12,23 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-// La clase ya no necesita el Gestor para solo el diseño, pero se mantiene la estructura
-// para la futura conexión funcional.
-// public class vistaGeneral extends JFrame {
-// public vistaGeneral(gestorEmpleado gestor) { ... }
-// }
-
-public class vistaGeneral extends JFrame {
+public class VistaLogin extends JFrame {
 
     // COMPONENTES DE SWING
     private JTextField txtLegajo;
     private JPasswordField txtPassword;
     private JButton btnLogin;
-    private JCheckBox chkMostrarPass; // Nuevo componente
+    private JCheckBox chkMostrarPass;
 
-    // El constructor se deja sin el gestor para que se pueda ver solo el diseño
-    public vistaGeneral() {
+    ControladorLogin controlador;
+
+    public VistaLogin(ControladorLogin controlador) {
         super("Ingreso al Sistema | Taller Mecánico");
-        // Si necesitas volver a la versión funcional, recuerda re-añadir el parámetro gestorEmpleado gestor al constructor
 
+        this.controlador = controlador;
         inicializarComponentes();
 
-        this.setSize(450, 290); // Se aumenta el alto para la nueva casilla
+        this.setSize(900, 650);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
     }
@@ -45,12 +42,12 @@ public class vistaGeneral extends JFrame {
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 
-        // --- Panel Login (GridBagLayout)
+        // Panel Login (GridBagLayout)
         JPanel pnlLogin = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
 
-        // --- 1. Legajo ---
+        // Legajo
         gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.EAST;
         pnlLogin.add(new JLabel("Legajo:"), gbc);
 
@@ -59,7 +56,7 @@ public class vistaGeneral extends JFrame {
         ((AbstractDocument) txtLegajo.getDocument()).setDocumentFilter(new DigitFilter());
         pnlLogin.add(txtLegajo, gbc);
 
-        // --- 2. Contraseña ---
+        // Contraseña
         gbc.gridx = 0; gbc.gridy = 1; gbc.anchor = GridBagConstraints.EAST;
         pnlLogin.add(new JLabel("Contraseña:"), gbc);
 
@@ -67,13 +64,13 @@ public class vistaGeneral extends JFrame {
         txtPassword = new JPasswordField(20);
         pnlLogin.add(txtPassword, gbc);
 
-        // --- 3. Checkbox "Mostrar Contraseña" (NUEVA FILA) ---
+        // Checkbox "Mostrar Contraseña"
         chkMostrarPass = new JCheckBox("Mostrar Contraseña");
         gbc.gridx = 1; gbc.gridy = 2;
         gbc.gridwidth = 1; // Ocupa solo la segunda columna
         gbc.anchor = GridBagConstraints.WEST; // Alineado a la izquierda
 
-        // ** CÓDIGO CLAVE: Añadir el listener para mostrar/ocultar **
+        // Funcionamiento Checkbox
         chkMostrarPass.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -89,7 +86,7 @@ public class vistaGeneral extends JFrame {
         pnlLogin.add(chkMostrarPass, gbc);
 
 
-        // --- 4. Botón de Ingreso (NUEVA FILA) ---
+        //  Boton de Ingreso
         gbc.gridx = 0; gbc.gridy = 3;
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.NONE;
@@ -100,8 +97,14 @@ public class vistaGeneral extends JFrame {
         btnLogin.setForeground(Color.BLACK);
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // El ActionListener funcional de validarIngreso debe implementarse después.
-        // btnLogin.addActionListener(this::validarIngreso);
+        // Funcionamiento Boton de Ingreso
+        btnLogin.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                validarCredenciales();
+            }
+        });
+
         pnlLogin.add(btnLogin, gbc);
 
         // Ensamblar el Content Pane
@@ -110,9 +113,30 @@ public class vistaGeneral extends JFrame {
         this.setContentPane(contentPane);
     }
 
-    // ******************************************************
+    private void validarCredenciales() {
+        String legajo = txtLegajo.getText();
+        String password = new String(txtPassword.getPassword());
+
+        if (legajo.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Debe completar todos los campos.",
+                    "Campos incompletos",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        boolean respuesta = controlador.validarCredenciales(legajo, password);
+
+        if (!respuesta) {
+            JOptionPane.showMessageDialog(this,
+                    "Credenciales de ingreso incorrectas. Ingrese nuevamente.",
+                    "Credenciales incorrectas",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+    }
+
     // CLASE INTERNA DE FILTRO (Necesaria para que compile el código del diseño)
-    // ******************************************************
     private class DigitFilter extends DocumentFilter {
         @Override
         public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
@@ -127,16 +151,5 @@ public class vistaGeneral extends JFrame {
                 super.replace(fb, offset, length, text, attrs);
             }
         }
-    }
-
-    // ******************************************************
-    // MÉTODO MAIN TEMPORAL PARA VER EL DISEÑO
-    // ******************************************************
-    public static void main(String[] args) {
-        // Lanza la aplicación en el hilo de eventos de Swing
-        SwingUtilities.invokeLater(() -> {
-            // Se crea la vista sin pasarle ningún gestor
-            new vistaGeneral().setVisible(true);
-        });
     }
 }
