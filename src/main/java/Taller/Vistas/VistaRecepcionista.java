@@ -1,17 +1,17 @@
 package Taller.Vistas;
 
 import Taller.Controlador.ControladorOrdenes;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-
 import Taller.Modelo.Cliente;
 import Taller.Modelo.OrdenDeTrabajo;
 import Taller.Modelo.Vehiculo;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+
 public class VistaRecepcionista extends JFrame {
 
-    private ControladorOrdenes controladorOrdenes;
+    private final ControladorOrdenes controladorOrdenes;
 
     // --- COMPONENTES DEL FORMULARIO ---
     private JTextField txtDni, txtNombre, txtTelefono, txtPatente, txtDescripcion, txtMarca, txtModelo, txtAnio;
@@ -57,57 +57,68 @@ public class VistaRecepcionista extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // --- Datos del cliente ---
-        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         panel.add(new JLabel("DNI:"), gbc);
         gbc.gridx = 1;
         txtDni = new JTextField(15);
         panel.add(txtDni, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 1;
         panel.add(new JLabel("Nombre:"), gbc);
         gbc.gridx = 1;
         txtNombre = new JTextField(20);
         panel.add(txtNombre, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridx = 0;
+        gbc.gridy = 2;
         panel.add(new JLabel("Teléfono:"), gbc);
         gbc.gridx = 1;
         txtTelefono = new JTextField(15);
         panel.add(txtTelefono, gbc);
 
         // --- Datos del vehículo ---
-        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.gridx = 0;
+        gbc.gridy = 3;
         panel.add(new JLabel("Patente:"), gbc);
         gbc.gridx = 1;
         txtPatente = new JTextField(10);
         panel.add(txtPatente, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 4;
+        gbc.gridx = 0;
+        gbc.gridy = 4;
         panel.add(new JLabel("Marca:"), gbc);
         gbc.gridx = 1;
         txtMarca = new JTextField(15);
         panel.add(txtMarca, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 5;
+        gbc.gridx = 0;
+        gbc.gridy = 5;
         panel.add(new JLabel("Modelo:"), gbc);
         gbc.gridx = 1;
         txtModelo = new JTextField(15);
         panel.add(txtModelo, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 6;
+        gbc.gridx = 0;
+        gbc.gridy = 6;
         panel.add(new JLabel("Año de Fabricación:"), gbc);
         gbc.gridx = 1;
         txtAnio = new JTextField(6);
         panel.add(txtAnio, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 7;
+        gbc.gridx = 0;
+        gbc.gridy = 7;
         panel.add(new JLabel("Descripción de la falla:"), gbc);
         gbc.gridx = 1;
         txtDescripcion = new JTextField(25);
         panel.add(txtDescripcion, gbc);
 
         // --- Botón para crear la orden ---
-        gbc.gridx = 0; gbc.gridy = 8; gbc.gridwidth = 2; gbc.anchor = GridBagConstraints.CENTER;
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
         btnGenerarOrden = new JButton("Generar Orden de Trabajo");
         btnGenerarOrden.setBackground(new Color(40, 150, 40));
         btnGenerarOrden.setForeground(Color.BLACK);
@@ -238,26 +249,22 @@ public class VistaRecepcionista extends JFrame {
         Cliente cliente = orden.getClienteAsignado();
         Vehiculo vehiculo = orden.getVehiculo();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("ORDEN DE TRABAJO #").append(orden.getIdOrdenDeTrabajo()).append("\n");
-        sb.append("Fecha de creación: ").append(orden.getFechaCreacion()).append("\n");
-        sb.append("Estado actual: ").append(orden.getEstado()).append("\n\n");
+        String sb = "ORDEN DE TRABAJO #" + orden.getIdOrdenDeTrabajo() + "\n" +
+                "Fecha de creación: " + orden.getFechaCreacion() + "\n" +
+                "Estado actual: " + orden.getEstado() + "\n\n" +
+                "CLIENTE\n" +
+                "DNI: " + cliente.dni() + "\n" +
+                "Nombre: " + cliente.nombre() + "\n" +
+                "Teléfono: " + cliente.telefono() + "\n\n" +
+                "VEHÍCULO\n" +
+                "Patente: " + vehiculo.getPatente() + "\n" +
+                "Marca: " + vehiculo.getMarca() + "\n" +
+                "Modelo: " + vehiculo.getModelo() + "\n" +
+                "Año de fabricación: " + vehiculo.getAñoFabricacion() + "\n\n" +
+                "DIAGNÓSTICO\n" +
+                orden.getDiagnostico() + "\n";
 
-        sb.append("CLIENTE\n");
-        sb.append("DNI: ").append(cliente.getDni()).append("\n");
-        sb.append("Nombre: ").append(cliente.getNombre()).append("\n");
-        sb.append("Teléfono: ").append(cliente.getTelefono()).append("\n\n");
-
-        sb.append("VEHÍCULO\n");
-        sb.append("Patente: ").append(vehiculo.getPatente()).append("\n");
-        sb.append("Marca: ").append(vehiculo.getMarca()).append("\n");
-        sb.append("Modelo: ").append(vehiculo.getModelo()).append("\n");
-        sb.append("Año de fabricación: ").append(vehiculo.getAñoFabricacion()).append("\n\n");
-
-        sb.append("DIAGNÓSTICO\n");
-        sb.append(orden.getDiagnostico()).append("\n");
-
-        txtResultadoOrden.setText(sb.toString());
+        txtResultadoOrden.setText(sb);
 
         // Habilitar el botón solo si la orden está finalizada
         btnDevolverVehiculo.setEnabled("Pagado".equalsIgnoreCase(orden.getEstado()));

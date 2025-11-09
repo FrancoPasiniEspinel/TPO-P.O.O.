@@ -1,17 +1,17 @@
 package Taller.Controlador;
 
 import Taller.Modelo.Empleado;
-import Taller.Vistas.VistaRecepcionista;
 import Taller.Vistas.VistaAdministrativo;
-import Taller.Vistas.VistaMecanico;
 import Taller.Vistas.VistaLogin;
+import Taller.Vistas.VistaMecanico;
+import Taller.Vistas.VistaRecepcionista;
 
 import javax.swing.*;
 
 public class ControladorMaestro {
     // Vistas
-    private JFrame vistaAdministrativo = new VistaAdministrativo();
-    private JFrame vistaMecanico = new VistaMecanico();
+    private JFrame vistaAdministrativo;
+    private JFrame vistaMecanico;
     private JFrame vistaRecepcionista;
     private JFrame vistaLogin;
 
@@ -28,9 +28,10 @@ public class ControladorMaestro {
     public void cambiarVentana(Empleado empleado) {
         vistaLogin.setVisible(false);
 
-        switch (empleado.getTipo()){
+        switch (empleado.getTipo()) {
             case "Mecanico":
-                vistaMecanico = new VistaMecanico();
+                controladorOrdenes = new ControladorOrdenes(this);
+                vistaMecanico = new VistaMecanico(empleado, controladorOrdenes);
                 vistaMecanico.setVisible(true);
                 break;
             case "Administrativo":

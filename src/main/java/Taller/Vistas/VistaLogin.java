@@ -7,20 +7,18 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class VistaLogin extends JFrame {
 
+    ControladorLogin controlador;
     // COMPONENTES DE SWING
     private JTextField txtLegajo;
     private JPasswordField txtPassword;
     private JButton btnLogin;
     private JCheckBox chkMostrarPass;
-
-    ControladorLogin controlador;
 
     public VistaLogin(ControladorLogin controlador) {
         super("Ingreso al Sistema | Taller Mecánico");
@@ -48,16 +46,21 @@ public class VistaLogin extends JFrame {
         gbc.insets = new Insets(5, 5, 5, 5);
 
         // Legajo
-        gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.EAST;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.EAST;
         pnlLogin.add(new JLabel("Legajo:"), gbc);
 
-        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         txtLegajo = new JTextField(20);
         ((AbstractDocument) txtLegajo.getDocument()).setDocumentFilter(new DigitFilter());
         pnlLogin.add(txtLegajo, gbc);
 
         // Contraseña
-        gbc.gridx = 0; gbc.gridy = 1; gbc.anchor = GridBagConstraints.EAST;
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.EAST;
         pnlLogin.add(new JLabel("Contraseña:"), gbc);
 
         gbc.gridx = 1;
@@ -66,7 +69,8 @@ public class VistaLogin extends JFrame {
 
         // Checkbox "Mostrar Contraseña"
         chkMostrarPass = new JCheckBox("Mostrar Contraseña");
-        gbc.gridx = 1; gbc.gridy = 2;
+        gbc.gridx = 1;
+        gbc.gridy = 2;
         gbc.gridwidth = 1; // Ocupa solo la segunda columna
         gbc.anchor = GridBagConstraints.WEST; // Alineado a la izquierda
 
@@ -87,7 +91,8 @@ public class VistaLogin extends JFrame {
 
 
         //  Boton de Ingreso
-        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.gridx = 0;
+        gbc.gridy = 3;
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.CENTER;
@@ -132,7 +137,6 @@ public class VistaLogin extends JFrame {
                     "Credenciales de ingreso incorrectas. Ingrese nuevamente.",
                     "Credenciales incorrectas",
                     JOptionPane.WARNING_MESSAGE);
-            return;
         }
     }
 

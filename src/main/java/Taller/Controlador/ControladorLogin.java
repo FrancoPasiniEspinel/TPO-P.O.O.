@@ -5,8 +5,8 @@ import Taller.Modelo.GestorEmpleados;
 
 public class ControladorLogin {
 
-    private ControladorMaestro controladorMaestro;
-    private GestorEmpleados  gestorEmpleados;
+    private final ControladorMaestro controladorMaestro;
+    private final GestorEmpleados gestorEmpleados;
 
     public ControladorLogin(ControladorMaestro controladorMaestro) {
         this.controladorMaestro = controladorMaestro;

@@ -24,4 +24,20 @@ public class ControladorOrdenes {
     public boolean registrarEntregaVehiculo(int idOrdenDeTrabajo) {
         return gestorOrdenes.registrarEntregaVehiculo(idOrdenDeTrabajo);
     }
+
+    public OrdenDeTrabajo obtenerOrdenMecanico(int legajo) {
+        OrdenDeTrabajo ordenAsignada = gestorOrdenes.obtenerOrdenMecanico(legajo);
+        if (ordenAsignada == null){
+            ordenAsignada = gestorOrdenes.asignarOrdenPrioritaria(legajo);
+        }
+        return ordenAsignada;
+    }
+
+    public boolean modificarInformeTecnico(int idOrdenDeTrabajo, String detalle) {
+        return gestorOrdenes.modificarInformeTecnico(idOrdenDeTrabajo, detalle);
+    }
+
+    public boolean actualizarHorasOrden(int idOrdenDeTrabajo, int horasTrabajo) {
+        return gestorOrdenes.actualizarHorasOrden(idOrdenDeTrabajo, horasTrabajo);
+    }
 }

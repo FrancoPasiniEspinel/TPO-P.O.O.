@@ -9,7 +9,8 @@ public class GestorOrdenes {
     private static final String user = "taller_user";
     private static final String password = "12345678";
 
-    public GestorOrdenes() {}
+    public GestorOrdenes() {
+    }
 
     public String generarOrden(int dni, String nombre, int telefono, String patente, String marca, String modelo, int añoFabricacion, String descripcion) {
         try (Connection connection = DriverManager.getConnection(connectionUrl, user, password)) {
@@ -24,7 +25,9 @@ public class GestorOrdenes {
                 ps.setInt(3, telefono);
 
                 filas = ps.executeUpdate();
-                if (filas == 0) { return "fallo"; }
+                if (filas == 0) {
+                    return "fallo";
+                }
 
 
                 ps = connection.prepareStatement("INSERT INTO Vehiculo (patenteVehiculo, marcaVehiculo, modeloVehiculo, añoFabricacionvehiculo) VALUES (?, ?, ?, ?)");
@@ -34,18 +37,22 @@ public class GestorOrdenes {
                 ps.setInt(4, añoFabricacion);
 
                 filas = ps.executeUpdate();
-                if (filas == 0) { return "fallo"; }
+                if (filas == 0) {
+                    return "fallo";
+                }
 
                 ps = connection.prepareStatement(
-                        "INSERT INTO OrdenDeTrabajo (estado, fechaCreacion, patenteVehiculo, mecanicoAsignado, diagnostico, idCliente)" +
-                        " VALUES ('Pendiente', ?, ?, null, ?, (SELECT TOP 1 idCliente FROM Cliente WHERE dniCliente = ?))");
+                        "INSERT INTO OrdenDeTrabajo (estado, fechaCreacion, patenteVehiculo, legajoMecanicoAsignado, diagnostico, idCliente)" +
+                                " VALUES ('Pendiente', ?, ?, null, ?, (SELECT TOP 1 idCliente FROM Cliente WHERE dniCliente = ?))");
                 ps.setDate(1, Date.valueOf(LocalDate.now()));
                 ps.setString(2, patente);
                 ps.setString(3, descripcion);
                 ps.setInt(4, dni);
 
                 filas = ps.executeUpdate();
-                if (filas == 0) { return "fallo"; }
+                if (filas == 0) {
+                    return "fallo";
+                }
 
                 connection.commit();
                 return "exito";
@@ -71,14 +78,14 @@ public class GestorOrdenes {
         try (Connection connection = DriverManager.getConnection(connectionUrl, user, password)) {
             try {
                 PreparedStatement ps = connection.prepareStatement("""
-                                SELECT o.idOrdenDeTrabajo, o.estado, o.fechaCreacion, o.mecanicoAsignado, o.informeTecnico, o.diagnostico,
-                                    c.idCliente, c.dniCliente, c.nombreCliente, c.telefonoCliente,
-                                    v.patenteVehiculo, v.marcaVehiculo, v.modeloVehiculo, v.añoFabricacionVehiculo
-                                FROM OrdenDeTrabajo o
-                                JOIN Cliente c ON o.idCliente = c.idCliente
-                                JOIN Vehiculo v ON o.patenteVehiculo = v.patenteVehiculo
-                                WHERE v.patenteVehiculo = ?;
-                """);
+                                        SELECT o.idOrdenDeTrabajo, o.estado, o.fechaCreacion, o.legajoMecanicoAsignado, o.informeTecnico, o.diagnostico, o.horasTrabajo,
+                                            c.idCliente, c.dniCliente, c.nombreCliente, c.telefonoCliente,
+                                            v.patenteVehiculo, v.marcaVehiculo, v.modeloVehiculo, v.añoFabricacionVehiculo
+                                        FROM OrdenDeTrabajo o
+                                        JOIN Cliente c ON o.idCliente = c.idCliente
+                                        JOIN Vehiculo v ON o.patenteVehiculo = v.patenteVehiculo
+                                        WHERE v.patenteVehiculo = ?;
+                        """);
                 ps.setString(1, patente);
 
                 ResultSet rs = ps.executeQuery();
@@ -98,8 +105,10 @@ public class GestorOrdenes {
                                     rs.getString("nombreCliente"),
                                     rs.getInt("dniCliente"),
                                     rs.getInt("telefonoCliente")
-                                    ),
-                            rs.getString("diagnostico")
+                            ),
+                            rs.getString("diagnostico"),
+                            rs.getString("informeTecnico"),
+                            rs.getInt("horasTrabajo")
                     );
                 }
                 return null;
@@ -115,20 +124,106 @@ public class GestorOrdenes {
 
     public boolean registrarEntregaVehiculo(int idOrdenDeTrabajo) {
         try (Connection connection = DriverManager.getConnection(connectionUrl, user, password)) {
-            try{
+            try {
                 PreparedStatement ps = connection.prepareStatement("UPDATE OrdenDeTrabajo SET estado = 'Finalizado' WHERE idOrdenDeTrabajo = ?;");
                 ps.setInt(1, idOrdenDeTrabajo);
 
-                if (ps.executeUpdate()>0){
-                    return true;
-                }
-                return false;
-            } catch (SQLException ex){
+                return ps.executeUpdate() > 0;
+            } catch (SQLException ex) {
                 System.err.println("Error en ejecucion de la sentencia SQL: " + ex.getMessage());
                 return false;
             }
+        } catch (SQLException e) {
+            System.err.println("Error conectando a la BDD: " + e.getMessage());
+            return false;
         }
-        catch (SQLException e) {
+    }
+
+    public OrdenDeTrabajo obtenerOrdenMecanico(int legajo) {
+        try (Connection connection = DriverManager.getConnection(connectionUrl, user, password)) {
+            try {
+                PreparedStatement ps = connection.prepareStatement("SELECT TOP 1 * FROM ordenDeTrabajo WHERE legajoMecanicoAsignado = ? ORDER BY fechaCreacion;");
+                ps.setInt(1, legajo);
+                ResultSet rs = ps.executeQuery();
+
+                if (rs.next()) {
+                    return this.buscarOrdenPorPatente(rs.getString("patenteVehiculo"));
+                } else {
+                    return null;
+                }
+            } catch (SQLException ex) {
+                System.err.println("Error en ejecucion de la sentencia SQL: " + ex.getMessage());
+                return null;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error conectando a la BDD: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public OrdenDeTrabajo asignarOrdenPrioritaria(int legajo) {
+        try (Connection connection = DriverManager.getConnection(connectionUrl, user, password)) {
+            try {
+                connection.setAutoCommit(false);
+                PreparedStatement ps = connection.prepareStatement("SELECT TOP 1 * FROM ordenDeTrabajo WHERE estado = 'Pendiente' ORDER BY fechaCreacion");
+                ResultSet rs = ps.executeQuery();
+
+                if (!rs.next()) {
+                    return null;
+                }
+
+                ps = connection.prepareStatement("UPDATE OrdenDeTrabajo SET legajoMecanicoAsignado = ?, estado = 'En_Reparacion' WHERE idOrdenDeTrabajo = ?;");
+                ps.setInt(1, legajo);
+                ps.setInt(2, rs.getInt("idOrdenDeTrabajo"));
+
+                if( ps.executeUpdate() > 0){
+                    connection.commit();
+                    return this.buscarOrdenPorPatente(rs.getString("patenteVehiculo"));
+                }
+                connection.rollback();
+                return null;
+            } catch (SQLException ex) {
+                System.err.println("Error en ejecucion de la sentencia SQL: " + ex.getMessage());
+                connection.rollback();
+                return null;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error conectando a la BDD: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public boolean modificarInformeTecnico(int idOrdenDeTrabajo, String detalle) {
+        try (Connection connection = DriverManager.getConnection(connectionUrl, user, password)) {
+            try {
+                PreparedStatement ps = connection.prepareStatement("UPDATE OrdenDeTrabajo SET informeTecnico = ? WHERE idOrdenDeTrabajo = ?;");
+                ps.setString(1, detalle);
+                ps.setInt(2, idOrdenDeTrabajo);
+
+                return ps.executeUpdate() > 0;
+            } catch (SQLException ex) {
+                System.err.println("Error en ejecucion de la sentencia SQL: " + ex.getMessage());
+                return false;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error conectando a la BDD: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean actualizarHorasOrden(int idOrdenDeTrabajo, int horasTrabajo) {
+        try (Connection connection = DriverManager.getConnection(connectionUrl, user, password)) {
+            try {
+                PreparedStatement ps = connection.prepareStatement("UPDATE OrdenDeTrabajo SET horasTrabajo = ? WHERE idOrdenDeTrabajo = ?;");
+                ps.setInt(1, horasTrabajo);
+                ps.setInt(2, idOrdenDeTrabajo);
+
+                return ps.executeUpdate() > 0;
+            } catch (SQLException ex) {
+                System.err.println("Error en ejecucion de la sentencia SQL: " + ex.getMessage());
+                return false;
+            }
+        } catch (SQLException e) {
             System.err.println("Error conectando a la BDD: " + e.getMessage());
             return false;
         }

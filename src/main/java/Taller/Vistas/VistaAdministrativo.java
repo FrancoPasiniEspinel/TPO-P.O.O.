@@ -46,16 +46,25 @@ public class VistaAdministrativo extends JFrame {
         this.setLocationRelativeTo(null);
     }
 
+    // =================================================================================
+    // MAIN TEMPORAL PARA VER EL DISEÑO
+    // =================================================================================
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new VistaAdministrativo().setVisible(true);
+        });
+    }
+
+    // =================================================================================
+    // PESTAÑA 1: INVENTARIO (PEDIDOS Y RECEPCIÓN)
+    // =================================================================================
+
     private void inicializarComponentes() {
         tabbedPane = new JTabbedPane();
         tabbedPane.addTab("1. Gestión de Inventario/Pedidos", crearPanelInventario());
         tabbedPane.addTab("2. Procesamiento de Pagos/Facturación", crearPanelPagos());
         this.add(tabbedPane);
     }
-
-    // =================================================================================
-    // PESTAÑA 1: INVENTARIO (PEDIDOS Y RECEPCIÓN)
-    // =================================================================================
 
     private JPanel crearPanelInventario() {
         JPanel panel = new JPanel(new BorderLayout(15, 15));
@@ -79,8 +88,8 @@ public class VistaAdministrativo extends JFrame {
         tblRepuestosFaltantes = new JTable(modeloTablaRepuestos);
 
         // Simulación: Cargar filas para probar el borrado
-        modeloTablaRepuestos.addRow(new Object[]{"Filt-01", "Filtro Aceite", (Object) 5, (Object) 45.50, (Object) 227.50});
-        modeloTablaRepuestos.addRow(new Object[]{"Filt-02", "Filtro Aire", (Object) 10, (Object) 30.00, (Object) 300.00});
+        modeloTablaRepuestos.addRow(new Object[]{"Filt-01", "Filtro Aceite", 5, 45.50, 227.50});
+        modeloTablaRepuestos.addRow(new Object[]{"Filt-02", "Filtro Aire", 10, 30.00, 300.00});
 
         btnSolicitarPedido = new JButton("CONFIRMAR PEDIDO DE REPUESTOS");
         btnSolicitarPedido.setBackground(new Color(50, 150, 250));
@@ -136,6 +145,8 @@ public class VistaAdministrativo extends JFrame {
         actualizarTablaTrasRecepcion(codigo, cantidad);
     }
 
+    // PESTAÑA 2: PROCESAMIENTO DE PAGOS Y FACTURACIÓN
+
     private void actualizarTablaTrasRecepcion(String codigoRecibido, int cantidadRecibida) {
         DefaultTableModel modelo = (DefaultTableModel) tblRepuestosFaltantes.getModel();
 
@@ -178,8 +189,6 @@ public class VistaAdministrativo extends JFrame {
         JOptionPane.showMessageDialog(this, "No se encontró ningún pedido pendiente para el código " + codigoRecibido + ".", "Búsqueda Fallida", JOptionPane.WARNING_MESSAGE);
     }
 
-    // PESTAÑA 2: PROCESAMIENTO DE PAGOS Y FACTURACIÓN
-
     private JPanel crearPanelPagos() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -190,32 +199,43 @@ public class VistaAdministrativo extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // --- 1. ID Orden de Trabajo ---
-        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         panel.add(new JLabel("ID Orden de Pago:"), gbc);
 
-        gbc.gridx = 1; gbc.weightx = 1.0;
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
         txtIdOrdenPago = new JTextField(15);
         panel.add(txtIdOrdenPago, gbc);
 
         // --- 2. Método de Pago ---
-        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.0;
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 0.0;
         panel.add(new JLabel("Método de Pago:"), gbc);
 
-        gbc.gridx = 1; gbc.weightx = 1.0;
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
         cmbMetodoPago = new JComboBox<>(new String[]{"Efectivo", "Tarjeta/Transferencia"});
         panel.add(cmbMetodoPago, gbc);
 
         // --- 3. Monto Recibido ---
-        gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0.0;
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.weightx = 0.0;
         panel.add(new JLabel("Monto Recibido:"), gbc);
 
-        gbc.gridx = 1; gbc.weightx = 1.0;
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
         txtMontoRecibido = new JTextField(15);
         panel.add(txtMontoRecibido, gbc);
 
         // --- 4. Botón de Confirmación ---
-        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER; gbc.fill = GridBagConstraints.NONE;
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.fill = GridBagConstraints.NONE;
 
         btnConfirmarPago = new JButton("CONFIRMAR PAGO Y HABILITAR RETIRO");
         btnConfirmarPago.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -284,14 +304,5 @@ public class VistaAdministrativo extends JFrame {
         // Limpiar campos después de la simulación
         txtIdOrdenPago.setText("");
         txtMontoRecibido.setText("");
-    }
-
-    // =================================================================================
-    // MAIN TEMPORAL PARA VER EL DISEÑO
-    // =================================================================================
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new VistaAdministrativo().setVisible(true);
-        });
     }
 }

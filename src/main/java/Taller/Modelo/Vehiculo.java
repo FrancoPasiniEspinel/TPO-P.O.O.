@@ -1,7 +1,5 @@
 package Taller.Modelo;
 
-import java.util.Date;
-
 public class Vehiculo {
     private String patente;
     private String marca;

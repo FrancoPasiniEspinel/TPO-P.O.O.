@@ -1,248 +1,302 @@
 package Taller.Vistas;
 
-import Taller.Modelo.OrdenDeTrabajo;
-import Taller.Modelo.Repuesto;
-import Taller.Modelo.Vehiculo;
-import Taller.Modelo.Mecanico;
+import Taller.Controlador.ControladorOrdenes;
+import Taller.Modelo.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.List;
-
-// Importar los Gestores necesarios
-// import Taller.Gestor.GestorMecanico;
-// import Taller.Gestor.GestorInventario;
 
 public class VistaMecanico extends JFrame {
 
-    // ** VARIABLE CRUCIAL: Almacena la orden que se está editando **
-    private OrdenDeTrabajo ordenActiva = null;
+    private final ControladorOrdenes controladorOrdenes;
+    private final OrdenDeTrabajo ordenAsignada;
 
-    // DEPENDENCIAS (Se comentan)
-    // private final GestorMecanico gestorMecanico;
-
-    // Contenedores Principales
-    private JPanel pnlCentral; // Usa CardLayout
-    private CardLayout cardLayout;
-
-    // Componentes de la GUI
-    private JTable tblOrdenesAsignadas; // Tabla inicial
-    private JButton btnIniciarReparacion;
     private JTextArea txtInfoOrden;
-
-    // Componentes del Panel de Edición (Pestaña 1)
     private JTextArea txtDiagnostico;
+    private JTextArea txtDetalleTecnico;
     private JTextField txtHoras;
-    private JButton btnFinalizar;
+    private JTable tblRepuestos;
+    private JTextField txtNombreRepuesto;
+    private JTextField txtCantidad;
+    private DefaultTableModel modeloRepuestos;
+    private JLabel lblHorasTotales; // NUEVO
+
+    // Botones para deshabilitar si no hay orden
     private JButton btnRegistrarHoras;
-    private JButton btnRegistrarDiagnostico;
+    private JButton btnGuardarDetalle;
+    private JButton btnAgregarRepuesto;
+    private JButton btnFinalizar;
 
-    // Simulación de clases para que compile
-    static class VehiculoSimulado extends Vehiculo {
-        private String patente;
-        public VehiculoSimulado(String patente) { this.patente = patente; }
-        public String getPatente() { return patente; }
-    }
-    static class OrdenSimulada extends OrdenDeTrabajo {
-        public OrdenSimulada(int id, String estado, String cliente, String patente) {
-            super(id, null, null, new VehiculoSimulado(patente), new Mecanico(), null, null);
-            // Simulación de campos necesarios
-            this.estado = estado;
-            this.cliente = cliente;
-        }
-        private String estado;
-        private String cliente;
-
-        //public String getEstado() { return estado; }
-        public String getNombreCliente() { return cliente; }
-    }
-
-
-    public VistaMecanico(/* GestorMecanico gm, GestorInventario gi */) {
-        super("Módulo Mecánico - Gestión de Reparación");
+    public VistaMecanico(Empleado mecanico, ControladorOrdenes controladorOrdenes) {
+        super("Módulo Mecánico - Orden Asignada");
+        this.controladorOrdenes = controladorOrdenes;
+        this.ordenAsignada = controladorOrdenes.obtenerOrdenMecanico(mecanico.getLegajo());
 
         inicializarComponentes();
+        mostrarDatosOrden();
 
-        this.setSize(900, 650);
+        this.setSize(950, 700);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
     }
 
+    // -------------------------------------------------------------------------------------
+    // ESTRUCTURA PRINCIPAL
+    // -------------------------------------------------------------------------------------
     private void inicializarComponentes() {
-        // --- Contenedor Central con CardLayout ---
-        cardLayout = new CardLayout();
-        pnlCentral = new JPanel(cardLayout);
+        JPanel contenido = new JPanel(new BorderLayout(10, 10));
+        contenido.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // 1. Panel Inicial: Lista de Órdenes
-        pnlCentral.add(crearPanelListaOrdenes(), "LISTA");
+        // Panel superior: información general de la orden
+        txtInfoOrden = new JTextArea(6, 60);
+        txtInfoOrden.setEditable(false);
+        txtInfoOrden.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtInfoOrden.setBorder(BorderFactory.createTitledBorder("Información de la Orden"));
+        contenido.add(new JScrollPane(txtInfoOrden), BorderLayout.NORTH);
 
-        // 2. Panel Activo: Edición de la Orden
-        pnlCentral.add(crearPanelEdicionOrden(), "EDICION");
+        // Panel central: pestañas
+        JTabbedPane pestañas = new JTabbedPane();
+        pestañas.addTab("Diagnóstico, Horas y Detalles", crearPanelDiagnosticoHorasDetalles());
+        pestañas.addTab("Repuestos Usados", crearPanelRepuestos());
+        contenido.add(pestañas, BorderLayout.CENTER);
 
-        this.add(pnlCentral, BorderLayout.CENTER);
+        // Panel inferior: acciones
+        contenido.add(crearPanelAccionesFinales(), BorderLayout.SOUTH);
 
-        // Muestra la lista de órdenes al inicio
-        mostrarListaOrdenes();
+        this.add(contenido);
+
+        // Si no hay orden, deshabilitar funciones
+        if (ordenAsignada == null) {
+            deshabilitarFuncionesPorFaltaDeOrden();
+        }
     }
 
-    // ESTADO 1: LISTA DE ÓRDENES ASIGNADAS
+    // -------------------------------------------------------------------------------------
+    // PESTAÑA 1: Diagnóstico, Horas y Detalle Técnico
+    // -------------------------------------------------------------------------------------
+    private JPanel crearPanelDiagnosticoHorasDetalles() {
+        JPanel panel = new JPanel(new GridLayout(3, 1, 10, 10));
 
-    private JPanel crearPanelListaOrdenes() {
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBorder(BorderFactory.createTitledBorder("Órdenes Asignadas - Seleccione para trabajar"));
+        // --- Diagnóstico ---
+        JPanel pnlDiag = new JPanel(new BorderLayout());
+        pnlDiag.setBorder(BorderFactory.createTitledBorder("Diagnóstico General"));
+        txtDiagnostico = new JTextArea(5, 60);
+        txtDiagnostico.setEditable(false);
+        pnlDiag.add(new JScrollPane(txtDiagnostico), BorderLayout.CENTER);
+        panel.add(pnlDiag);
 
-        // Tabla con las órdenes
-        String[] columnas = {"ID Orden", "Cliente", "Patente", "Estado"};
-        tblOrdenesAsignadas = new JTable(new DefaultTableModel(columnas, 0));
+        // --- Horas trabajadas ---
+        JPanel pnlHoras = new JPanel();
+        pnlHoras.setLayout(new BoxLayout(pnlHoras, BoxLayout.Y_AXIS));
+        pnlHoras.setBorder(BorderFactory.createTitledBorder("Registro de Horas de Trabajo"));
 
-        // Simulación: Cargar datos para el ejemplo
-        DefaultTableModel modelo = (DefaultTableModel) tblOrdenesAsignadas.getModel();
-        modelo.addRow(new Object[]{(Object) 101, "Juan Pérez", "ABC 999", "PENDIENTE"});
-        modelo.addRow(new Object[]{(Object) 102, "Ana Gómez", "XYZ 555", "EN ESPERA"});
+        JPanel filaHoras = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
+        txtHoras = new JTextField(5);
+        btnRegistrarHoras = new JButton("Registrar Horas");
+        btnRegistrarHoras.addActionListener(this::accionRegistrarHoras);
+        filaHoras.add(new JLabel("Horas trabajadas:"));
+        filaHoras.add(txtHoras);
+        filaHoras.add(btnRegistrarHoras);
+        pnlHoras.add(filaHoras);
 
-        btnIniciarReparacion = new JButton("ACCEDER A LA REPARACIÓN SELECCIONADA");
-        btnIniciarReparacion.setBackground(new Color(50, 150, 250));
-        btnIniciarReparacion.setForeground(Color.BLACK);
+        // NUEVO: mostrar total de horas acumuladas
+        lblHorasTotales = new JLabel();
+        actualizarHorasTotales();
+        JPanel filaTotal = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+        filaTotal.add(lblHorasTotales);
+        pnlHoras.add(filaTotal);
 
-        // Conexión clave: Pasar a la vista de edición
-        btnIniciarReparacion.addActionListener(this::iniciarReparacion);
+        panel.add(pnlHoras);
 
-        panel.add(new JScrollPane(tblOrdenesAsignadas), BorderLayout.CENTER);
-        panel.add(btnIniciarReparacion, BorderLayout.SOUTH);
+        // --- Detalle Técnico ---
+        JPanel pnlDetalle = new JPanel(new BorderLayout());
+        pnlDetalle.setBorder(BorderFactory.createTitledBorder("Detalles Técnicos / Observaciones"));
+        txtDetalleTecnico = new JTextArea(4, 60);
+        pnlDetalle.add(new JScrollPane(txtDetalleTecnico), BorderLayout.CENTER);
+        btnGuardarDetalle = new JButton("Guardar Detalle Técnico");
+        btnGuardarDetalle.addActionListener(this::accionGuardarDetalleTecnico);
+        pnlDetalle.add(btnGuardarDetalle, BorderLayout.SOUTH);
+        panel.add(pnlDetalle);
 
         return panel;
     }
 
-    private void mostrarListaOrdenes() {
-        // Aquí se llamaría a gestorMecanico.obtenerOrdenesAsignadas()
-        cardLayout.show(pnlCentral, "LISTA");
-        this.setTitle("Módulo Mecánico - Órdenes Asignadas");
+    // -------------------------------------------------------------------------------------
+    // NUEVO MÉTODO: actualizar la etiqueta de horas
+    // -------------------------------------------------------------------------------------
+    private void actualizarHorasTotales() {
+        if (ordenAsignada != null) {
+            lblHorasTotales.setText("Total acumulado: " + ordenAsignada.getHorasTrabajo() + " horas");
+        } else {
+            lblHorasTotales.setText("Total acumulado: 0 horas");
+        }
     }
 
-    private void iniciarReparacion(ActionEvent e) {
-        int filaSeleccionada = tblOrdenesAsignadas.getSelectedRow();
-        if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(this, "Debe seleccionar una orden para iniciar la reparación.");
+    // -------------------------------------------------------------------------------------
+    // PESTAÑA 2: Registro de Repuestos
+    // -------------------------------------------------------------------------------------
+    private JPanel crearPanelRepuestos() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+
+        String[] columnas = {"Nombre Repuesto", "Cantidad"};
+        modeloRepuestos = new DefaultTableModel(columnas, 0);
+        tblRepuestos = new JTable(modeloRepuestos);
+        panel.add(new JScrollPane(tblRepuestos), BorderLayout.CENTER);
+
+        JPanel pnlCarga = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        pnlCarga.setBorder(BorderFactory.createTitledBorder("Agregar Repuesto Usado"));
+        txtNombreRepuesto = new JTextField(15);
+        txtCantidad = new JTextField(5);
+        btnAgregarRepuesto = new JButton("Agregar");
+        btnAgregarRepuesto.addActionListener(this::accionAgregarRepuesto);
+        pnlCarga.add(new JLabel("Nombre:"));
+        pnlCarga.add(txtNombreRepuesto);
+        pnlCarga.add(new JLabel("Cantidad:"));
+        pnlCarga.add(txtCantidad);
+        pnlCarga.add(btnAgregarRepuesto);
+        panel.add(pnlCarga, BorderLayout.NORTH);
+
+        return panel;
+    }
+
+    // -------------------------------------------------------------------------------------
+    // PANEL DE ACCIONES INFERIOR
+    // -------------------------------------------------------------------------------------
+    private JPanel crearPanelAccionesFinales() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        btnFinalizar = new JButton("Finalizar Reparación");
+        btnFinalizar.setBackground(new Color(60, 170, 60));
+        btnFinalizar.addActionListener(this::accionFinalizar);
+
+        JButton btnCerrar = new JButton("Cerrar Ventana");
+        btnCerrar.addActionListener(e -> dispose());
+
+        panel.add(btnFinalizar);
+        panel.add(btnCerrar);
+        return panel;
+    }
+
+    // -------------------------------------------------------------------------------------
+    // ACCIONES
+    // -------------------------------------------------------------------------------------
+
+    private void accionRegistrarHoras(ActionEvent e) {
+        try {
+            int horas = Integer.parseInt(txtHoras.getText());
+            ordenAsignada.setHorasTrabajo(ordenAsignada.getHorasTrabajo() + horas);
+            boolean respuesta = controladorOrdenes.actualizarHorasOrden(
+                    ordenAsignada.getIdOrdenDeTrabajo(),
+                    ordenAsignada.getHorasTrabajo()
+            );
+            if (!respuesta) {
+                JOptionPane.showMessageDialog(this,
+                        "Actualización de horas fallida.",
+                        "Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            actualizarHorasTotales(); // 🔁 actualiza el label
+            JOptionPane.showMessageDialog(this, "Horas registradas correctamente.");
+            txtHoras.setText("");
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Ingrese un número válido para las horas trabajadas.");
+        }
+    }
+
+    private void accionGuardarDetalleTecnico(ActionEvent e) {
+        String detalle = txtDetalleTecnico.getText().trim();
+        if (detalle.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Debe ingresar algún detalle técnico antes de guardar.",
+                    "Error",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        DefaultTableModel modelo = (DefaultTableModel) tblOrdenesAsignadas.getModel();
-        int idOrden = (int) modelo.getValueAt(filaSeleccionada, 0);
-        String cliente = (String) modelo.getValueAt(filaSeleccionada, 1);
-        String patente = (String) modelo.getValueAt(filaSeleccionada, 2);
-
-        // 1. **SEGURIDAD Y CONEXIÓN**: Se carga el objeto OrdenDeTrabajo en la variable de estado
-        this.ordenActiva = new OrdenSimulada(idOrden, "EN PROCESO", cliente, patente);
-
-        // 2. Muestra la información de la orden activa en el panel de edición
-        String info = "ORDEN ID " + idOrden + " | Cliente: " + cliente + " | Patente: " + patente;
-        txtInfoOrden.setText(info);
-
-        // 3. Cambia la vista al panel de edición
-        cardLayout.show(pnlCentral, "EDICION");
-        this.setTitle("Módulo Mecánico - Editando Orden ID: " + idOrden);
+        boolean respuesta = controladorOrdenes.modificarInformeTecnico(ordenAsignada.getIdOrdenDeTrabajo(), detalle);
+        if (!respuesta){
+            JOptionPane.showMessageDialog(this,
+                    "Guardado de detalle técnico fallido.",
+                    "Error",
+                    JOptionPane.WARNING_MESSAGE);
+        } else{
+            JOptionPane.showMessageDialog(this, "Detalle técnico guardado correctamente.");
+        }
     }
 
-    // ESTADO 2: EDICIÓN DE LA ORDEN ACTIVA (DIAGNÓSTICO, HORAS, REPUESTOS)
+    private void accionAgregarRepuesto(ActionEvent e) {
+        String nombre = txtNombreRepuesto.getText().trim();
+        String cantidadStr = txtCantidad.getText().trim();
 
-    private JPanel crearPanelEdicionOrden() {
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        if (nombre.isEmpty() || cantidadStr.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Complete ambos campos para agregar un repuesto.");
+            return;
+        }
 
-        // Panel Norte: Información de la Orden Activa
-        txtInfoOrden = new JTextArea(3, 70);
-        txtInfoOrden.setEditable(false);
-        txtInfoOrden.setBorder(BorderFactory.createTitledBorder("Orden Activa"));
-        panel.add(new JScrollPane(txtInfoOrden), BorderLayout.NORTH);
-
-        // TabbedPane con Diagnóstico/Horas y Repuestos
-        JTabbedPane tbpEdicion = new JTabbedPane();
-        tbpEdicion.addTab("Diagnóstico y Horas", crearPanelDetallesDiagnostico());
-        tbpEdicion.addTab("Registro de Repuestos", crearPanelRepuestos());
-        panel.add(tbpEdicion, BorderLayout.CENTER);
-
-        // Panel Sur: Botones de Acción Global (Marcar Espera, Finalizar)
-        panel.add(crearPanelAccionesFinales(), BorderLayout.SOUTH);
-
-        return panel;
+        try {
+            int cantidad = Integer.parseInt(cantidadStr);
+            modeloRepuestos.addRow(new Object[]{nombre, cantidad});
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "La cantidad debe ser numérica.");
+        }
     }
 
-    private JPanel crearPanelDetallesDiagnostico() {
-        JPanel pnlDetalles = new JPanel(new GridLayout(3, 1, 10, 10));
-
-        // 1. Diagnóstico (registrarDiagnostico)
-        JPanel pnlDiag = new JPanel(new BorderLayout());
-        pnlDiag.setBorder(BorderFactory.createTitledBorder("Diagnóstico y Repuestos Necesarios"));
-        txtDiagnostico = new JTextArea(5, 30);
-        btnRegistrarDiagnostico = new JButton("Registrar Diagnóstico y Repuestos");
-        // btnRegistrarDiagnostico.addActionListener(e -> registrarDiagnostico(ordenActiva, txtDiagnostico.getText()));
-        pnlDiag.add(new JScrollPane(txtDiagnostico), BorderLayout.CENTER);
-        pnlDiag.add(btnRegistrarDiagnostico, BorderLayout.SOUTH);
-        pnlDetalles.add(pnlDiag);
-
-        // 2. Horas (registrarHorasTrabajo)
-        JPanel pnlHoras = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        pnlHoras.setBorder(BorderFactory.createTitledBorder("Horas de Trabajo"));
-        txtHoras = new JTextField(5);
-        btnRegistrarHoras = new JButton("Registrar Horas");
-        // Conexión: Usa ordenActiva.getIdTurno() para saber a qué auto asignar las horas
-        // btnRegistrarHoras.addActionListener(e -> registrarHorasTrabajo(ordenActiva.getIdTurno(), Double.parseDouble(txtHoras.getText())));
-        pnlHoras.add(new JLabel("Horas Trabajadas:"));
-        pnlHoras.add(txtHoras);
-        pnlHoras.add(btnRegistrarHoras);
-        pnlDetalles.add(pnlHoras);
-
-        // 3. Observaciones (agregarObservaciones)
-        // Similar a horas, usa ordenActiva.getIdTurno()
-
-        return pnlDetalles; // Simplificado
+    private void accionFinalizar(ActionEvent e) {
+        ordenAsignada.setEstado("Reparado");
+        JOptionPane.showMessageDialog(this, "La reparación ha sido marcada como FINALIZADA.");
+        mostrarDatosOrden();
     }
 
-    private JPanel crearPanelRepuestos() {
-        // [CÓDIGO OMITIDO POR ESPACIO]
-        return new JPanel();
+    // MÉTODO: deshabilitar si no hay orden asignada
+    private void deshabilitarFuncionesPorFaltaDeOrden() {
+        JOptionPane.showMessageDialog(this, "No hay ninguna orden de trabajo asignada actualmente.");
+        txtDiagnostico.setText("(sin orden asignada)");
+        txtDetalleTecnico.setText("(sin orden asignada)");
+        txtHoras.setEnabled(false);
+        txtNombreRepuesto.setEnabled(false);
+        txtCantidad.setEnabled(false);
+
+        btnRegistrarHoras.setEnabled(false);
+        btnGuardarDetalle.setEnabled(false);
+        btnAgregarRepuesto.setEnabled(false);
+        btnFinalizar.setEnabled(false);
     }
 
-    private JPanel crearPanelAccionesFinales() {
-        JPanel pnlAcciones = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+    // -------------------------------------------------------------------------------------
+    // MOSTRAR DATOS DE LA ORDEN
+    // -------------------------------------------------------------------------------------
+    private void mostrarDatosOrden() {
+        if (ordenAsignada == null) {
+            txtInfoOrden.setText("No hay ninguna orden de trabajo asignada.");
+            return;
+        }
 
-        btnFinalizar = new JButton("FINALIZAR REPARACIÓN");
-        // btnFinalizar.addActionListener(e -> finalizarReparacion(ordenActiva.getIdTurno()));
+        Cliente c = ordenAsignada.getClienteAsignado();
+        Vehiculo v = ordenAsignada.getVehiculo();
 
-        JButton btnMarcarEspera = new JButton("MARCAR EN ESPERA");
-        // btnMarcarEspera.addActionListener(e -> marcarOrdenEnEspera(ordenActiva.getIdTurno()));
+        StringBuilder sb = new StringBuilder();
+        sb.append("ORDEN DE TRABAJO #").append(ordenAsignada.getIdOrdenDeTrabajo()).append("\n");
+        sb.append("Estado: ").append(ordenAsignada.getEstado()).append("\n");
+        sb.append("Fecha creación: ").append(ordenAsignada.getFechaCreacion()).append("\n\n");
 
-        // NUEVO: Botón para volver a la lista si se equivocó o terminó.
-        JButton btnVolver = new JButton("<< Volver a Lista");
-        btnVolver.addActionListener(e -> mostrarListaOrdenes());
+        sb.append("CLIENTE:\n");
+        sb.append("DNI: ").append(c.dni()).append("\n");
+        sb.append("Nombre: ").append(c.nombre()).append("\n");
+        sb.append("Teléfono: ").append(c.telefono()).append("\n\n");
 
-        pnlAcciones.add(btnVolver);
-        pnlAcciones.add(btnMarcarEspera);
-        pnlAcciones.add(btnFinalizar);
-        return pnlAcciones;
-    }
+        sb.append("VEHÍCULO:\n");
+        sb.append("Patente: ").append(v.getPatente()).append("\n");
+        sb.append("Marca: ").append(v.getMarca()).append("\n");
+        sb.append("Modelo: ").append(v.getModelo()).append("\n");
+        sb.append("Año: ").append(v.getAñoFabricacion());
 
-    // =================================================================================
-    // MÉTODOS DEL DIAGRAMA (Contratos)
-    // =================================================================================
+        txtInfoOrden.setText(sb.toString());
 
-    // NOTA: Estos métodos ahora serían llamados por los ActionListeners,
-    // usando this.ordenActiva como parámetro.
-    public OrdenDeTrabajo verOrdenAsignada() { return null; }
-    public List<Repuesto> registrarDiagnostico(OrdenDeTrabajo orden, String descripcion) { return null; }
-    public boolean marcarOrdenEnEspera(int idOrden) { return true; }
-    public boolean registrarRepuestosUsados(OrdenDeTrabajo orden, List<Repuesto> repuestos) { return true; }
-    public boolean finalizarReparacion(int idOrden) { return true; }
-    public boolean registrarHorasTrabajo(int idOrden, double horas) { return true; }
-    public boolean agregarObservaciones(int idOrden, String texto) { return true; }
-
-    // =================================================================================
-    // MAIN TEMPORAL PARA VER EL DISEÑO
-    // =================================================================================
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new VistaMecanico();
-        });
+        // mostrar diagnóstico y detalle técnico en sus cuadros
+        txtDiagnostico.setText(ordenAsignada.getDiagnostico() == null ? "" : ordenAsignada.getDiagnostico());
+        txtDetalleTecnico.setText(ordenAsignada.getInformeTecnico() == null ? "" : ordenAsignada.getInformeTecnico());
+        actualizarHorasTotales(); // actualiza también al cargar
     }
 }
