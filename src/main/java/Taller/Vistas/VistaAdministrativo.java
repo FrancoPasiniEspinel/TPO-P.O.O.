@@ -178,9 +178,7 @@ public class VistaAdministrativo extends JFrame {
         JOptionPane.showMessageDialog(this, "No se encontró ningún pedido pendiente para el código " + codigoRecibido + ".", "Búsqueda Fallida", JOptionPane.WARNING_MESSAGE);
     }
 
-    // =================================================================================
-    // PESTAÑA 2: PROCESAMIENTO DE PAGOS Y FACTURACIÓN (AGREGADO NUEVAMENTE)
-    // =================================================================================
+    // PESTAÑA 2: PROCESAMIENTO DE PAGOS Y FACTURACIÓN
 
     private JPanel crearPanelPagos() {
         JPanel panel = new JPanel(new GridBagLayout());

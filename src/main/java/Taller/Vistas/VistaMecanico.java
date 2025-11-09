@@ -2,8 +2,8 @@ package Taller.Vistas;
 
 import Taller.Modelo.OrdenDeTrabajo;
 import Taller.Modelo.Repuesto;
-import Taller.Modelo.Vehiculo; // Importar Vehiculo para mostrar la patente
-import Taller.Modelo.Mecanico; // Importar Mecanico para la simulación
+import Taller.Modelo.Vehiculo;
+import Taller.Modelo.Mecanico;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -47,7 +47,7 @@ public class VistaMecanico extends JFrame {
     }
     static class OrdenSimulada extends OrdenDeTrabajo {
         public OrdenSimulada(int id, String estado, String cliente, String patente) {
-            super(id, null, null, new VehiculoSimulado(patente), new Mecanico(), null, null, null);
+            super(id, null, null, new VehiculoSimulado(patente), new Mecanico(), null, null);
             // Simulación de campos necesarios
             this.estado = estado;
             this.cliente = cliente;
@@ -87,9 +87,7 @@ public class VistaMecanico extends JFrame {
         mostrarListaOrdenes();
     }
 
-    // =================================================================================
     // ESTADO 1: LISTA DE ÓRDENES ASIGNADAS
-    // =================================================================================
 
     private JPanel crearPanelListaOrdenes() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
@@ -147,9 +145,7 @@ public class VistaMecanico extends JFrame {
         this.setTitle("Módulo Mecánico - Editando Orden ID: " + idOrden);
     }
 
-    // =================================================================================
     // ESTADO 2: EDICIÓN DE LA ORDEN ACTIVA (DIAGNÓSTICO, HORAS, REPUESTOS)
-    // =================================================================================
 
     private JPanel crearPanelEdicionOrden() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
