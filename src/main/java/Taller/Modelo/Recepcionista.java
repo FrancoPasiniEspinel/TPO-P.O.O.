@@ -7,4 +7,9 @@ public class Recepcionista extends Empleado {
         super(legajo, contraseña, tipo, nombre, apellido, costoHora);
         this.idRecepcionista = idRecepcionista;
     }
+
+    @Override
+    public int getLegajo() {
+        return idRecepcionista;
+    }
 }

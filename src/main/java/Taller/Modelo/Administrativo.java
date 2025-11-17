@@ -7,4 +7,9 @@ public class Administrativo extends Empleado {
         super(legajo, contraseña, tipo, nombre, apellido, costoHora);
         this.idAdministrativo = idAdministrativo;
     }
+
+    @Override
+    public int getLegajo() {
+        return idAdministrativo;
+    }
 }

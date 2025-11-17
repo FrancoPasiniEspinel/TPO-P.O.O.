@@ -15,18 +15,19 @@ import java.util.Optional;
 
 public class VistaAdministrativo extends JFrame {
 
-    // Controladores
+    // --- CONTROLADORES PRINCIPALES ---
     private final ControladorFacturas controladorFacturas;
     private final ControladorOrdenes contraladorOrdenes;
     private final ControladorMaestro controladorMaestro;
 
-    //Objetos
+    // --- OBJETOS DE NEGOCIO ---
     private Factura factura;
     private OrdenDeTrabajo ordenDeTrabajo;
 
-    // Componentes
+    // --- COMPONENTES PRINCIPALES ---
     private JTabbedPane tabbedPane;
 
+    // --- COMPONENTES PESTAÑA 1: INVENTARIO ---
     private JTable tblRepuestosFaltantes;
     private DefaultTableModel modeloTablaRepuestos;
     private JButton btnSolicitarPedido;
@@ -34,7 +35,7 @@ public class VistaAdministrativo extends JFrame {
     private JTextField txtCodRepuestoRecibido;
     private JTextField txtCantRecibida;
 
-    // Campos pestaña de pagos
+    // --- COMPONENTES PESTAÑA 2: PAGOS ---
     private JTextField txtPatentePago;
     private JTextField txtIdOrdenPago;
     private JTextField txtMontoRecibido;
@@ -45,6 +46,7 @@ public class VistaAdministrativo extends JFrame {
     private JButton btnBuscarFactura;
     private JButton btnConfirmarPago;
 
+    // --- CONSTRUCTOR ---
     public VistaAdministrativo(ControladorOrdenes controladorOrdenes, ControladorFacturas controladorFacturas, ControladorMaestro controladorMaestro) {
         super("Módulo Administrativo - Finanzas e Inventario");
 
@@ -59,6 +61,7 @@ public class VistaAdministrativo extends JFrame {
         this.setLocationRelativeTo(null);
     }
 
+    // --- INICIALIZACIÓN GENERAL DE LA VENTANA ---
     private void inicializarComponentes() {
         tabbedPane = new JTabbedPane();
         tabbedPane.addTab("1. Gestión de Inventario/Pedidos", crearPanelInventario());
@@ -68,6 +71,7 @@ public class VistaAdministrativo extends JFrame {
         this.add(crearPanelCerrarSesion(), BorderLayout.SOUTH);
     }
 
+    // --- PANEL DE CIERRE DE SESIÓN ---
     private JPanel crearPanelCerrarSesion() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         JButton btnCerrarSesion = new JButton("Cerrar Sesión");
@@ -78,12 +82,16 @@ public class VistaAdministrativo extends JFrame {
         return panel;
     }
 
+    // --- ACCIÓN PARA CERRAR SESIÓN ---
     private void accionCerrarSesion(ActionEvent e) {
+        // Cierra la vista y notifica al controlador maestro que el usuario cerró sesión
         dispose();
         controladorMaestro.cerrarSesion();
     }
 
+    // --- PANEL PRINCIPAL DE INVENTARIO ---
     private JPanel crearPanelInventario() {
+        // Contiene la lista de repuestos faltantes y el registro de recepción
         JPanel panel = new JPanel(new BorderLayout(15, 15));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -96,7 +104,9 @@ public class VistaAdministrativo extends JFrame {
         return panel;
     }
 
+    // --- SUBPANEL: LISTADO DE REPUESTOS A PEDIR ---
     private JPanel crearPanelRepuestosFaltantes() {
+        // Muestra los repuestos con faltantes y permite confirmar el pedido al proveedor
         JPanel pnlFaltantes = new JPanel(new BorderLayout());
         pnlFaltantes.setBorder(BorderFactory.createTitledBorder("Repuestos a Encargar (Lista de Pedido Activo)"));
 
@@ -104,6 +114,7 @@ public class VistaAdministrativo extends JFrame {
         modeloTablaRepuestos = new DefaultTableModel(columnas, 0);
         tblRepuestosFaltantes = new JTable(modeloTablaRepuestos);
 
+        // Carga inicial de datos simulados
         modeloTablaRepuestos.addRow(new Object[]{"Filt-01", "Filtro Aceite", 5, 45.50, 227.50});
         modeloTablaRepuestos.addRow(new Object[]{"Filt-02", "Filtro Aire", 10, 30.00, 300.00});
 
@@ -117,7 +128,9 @@ public class VistaAdministrativo extends JFrame {
         return pnlFaltantes;
     }
 
+    // --- SUBPANEL: REGISTRO DE RECEPCIÓN DE REPUESTOS ---
     private JPanel crearPanelRecepcionRepuestos() {
+        // Permite registrar los repuestos que fueron recibidos físicamente
         JPanel pnlRecepcion = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         pnlRecepcion.setBorder(BorderFactory.createTitledBorder("Carga de Repuestos Recibidos"));
 
@@ -135,11 +148,12 @@ public class VistaAdministrativo extends JFrame {
         btnRegistrarRecepcion.addActionListener(this::registrarRecepcionDeRepuestos);
 
         pnlRecepcion.add(btnRegistrarRecepcion);
-
         return pnlRecepcion;
     }
 
+    // --- ACCIÓN: REGISTRO DE RECEPCIÓN DE REPUESTOS ---
     private void registrarRecepcionDeRepuestos(ActionEvent e) {
+        // Valida los datos ingresados y actualiza la tabla según la cantidad recibida
         String codigo = txtCodRepuestoRecibido.getText().trim();
         String cantidadStr = txtCantRecibida.getText().trim();
 
@@ -159,7 +173,9 @@ public class VistaAdministrativo extends JFrame {
         actualizarTablaTrasRecepcion(codigo, cantidad);
     }
 
+    // --- ACTUALIZA LA TABLA DE PEDIDOS TRAS RECIBIR REPUESTOS ---
     private void actualizarTablaTrasRecepcion(String codigoRecibido, int cantidadRecibida) {
+        // Busca el repuesto en la tabla y actualiza su cantidad o lo elimina si ya fue completado
         DefaultTableModel modelo = (DefaultTableModel) tblRepuestosFaltantes.getModel();
 
         for (int i = modelo.getRowCount() - 1; i >= 0; i--) {
@@ -175,10 +191,12 @@ public class VistaAdministrativo extends JFrame {
                     cantidadNecesaria = (int) modelo.getValueAt(i, 2);
                 }
 
+                // Si se completó todo el pedido, se elimina la fila
                 if (cantidadRecibida >= cantidadNecesaria) {
                     modelo.removeRow(i);
                     JOptionPane.showMessageDialog(this, "¡Recepción Completa! Repuesto " + codigoRecibido + " borrado de la lista de pendientes.", "Actualización", JOptionPane.INFORMATION_MESSAGE);
                 } else {
+                    // Si aún faltan unidades, se actualiza la cantidad restante
                     int nuevoFaltante = cantidadNecesaria - cantidadRecibida;
                     double precioUnitario = (double) modelo.getValueAt(i, 3);
                     double nuevoTotal = nuevoFaltante * precioUnitario;
@@ -197,8 +215,9 @@ public class VistaAdministrativo extends JFrame {
         JOptionPane.showMessageDialog(this, "No se encontró ningún pedido pendiente para el código " + codigoRecibido + ".", "Búsqueda Fallida", JOptionPane.WARNING_MESSAGE);
     }
 
-    // Panel de pagos
+    // --- PANEL PRINCIPAL DE PAGOS Y FACTURACIÓN ---
     private JPanel crearPanelPagos() {
+        // Contiene los controles para buscar una factura, registrar el pago y habilitar el retiro del vehículo
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
@@ -207,9 +226,8 @@ public class VistaAdministrativo extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // --- 1. Campo Patente ---
-        gbc.gridx = 0;
-        gbc.gridy = 0;
+        // --- 1. CAMPO DE PATENTE PARA BUSCAR LA FACTURA ---
+        gbc.gridx = 0; gbc.gridy = 0;
         panel.add(new JLabel("Patente del Vehículo:"), gbc);
 
         gbc.gridx = 1;
@@ -223,7 +241,7 @@ public class VistaAdministrativo extends JFrame {
         btnBuscarFactura.addActionListener(this::buscarFactura);
         panel.add(btnBuscarFactura, gbc);
 
-        // --- 2. ID Orden ---
+        // --- 2. ID DE ORDEN ASOCIADA ---
         gbc.gridx = 0; gbc.gridy = 1;
         panel.add(new JLabel("ID Orden Asociada:"), gbc);
         gbc.gridx = 1;
@@ -231,14 +249,14 @@ public class VistaAdministrativo extends JFrame {
         txtIdOrdenPago.setEditable(false);
         panel.add(txtIdOrdenPago, gbc);
 
-        // --- 3. Monto ---
+        // --- 3. MONTO A PAGAR ---
         gbc.gridx = 0; gbc.gridy = 2;
         panel.add(new JLabel("Monto a Pagar:"), gbc);
         gbc.gridx = 1;
         txtMontoRecibido = new JTextField(10);
         panel.add(txtMontoRecibido, gbc);
 
-        // --- 4. Método de Pago ---
+        // --- 4. MÉTODO DE PAGO ---
         gbc.gridx = 0; gbc.gridy = 3;
         panel.add(new JLabel("Método de Pago:"), gbc);
         gbc.gridx = 1;
@@ -246,7 +264,7 @@ public class VistaAdministrativo extends JFrame {
         panel.add(cmbMetodoPago, gbc);
         cmbMetodoPago.addActionListener(ev -> toggleCamposTarjeta());
 
-        // --- 5. Campos adicionales para tarjeta ---
+        // --- 5. CAMPOS ADICIONALES PARA PAGO CON TARJETA ---
         gbc.gridx = 0; gbc.gridy = 4;
         panel.add(new JLabel("Número de Tarjeta:"), gbc);
         gbc.gridx = 1;
@@ -265,10 +283,10 @@ public class VistaAdministrativo extends JFrame {
         txtCodigoAut = new JTextField(10);
         panel.add(txtCodigoAut, gbc);
 
-        // Inicialmente, ocultar los campos de tarjeta
+        // Inicialmente ocultos
         setCamposTarjetaVisible(false);
 
-        // --- 6. Botón Confirmar Pago ---
+        // --- 6. BOTÓN FINAL PARA CONFIRMAR PAGO ---
         gbc.gridx = 0; gbc.gridy = 7; gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.CENTER;
         btnConfirmarPago = new JButton("CONFIRMAR PAGO Y ACEPTAR RETIRO");
@@ -281,18 +299,23 @@ public class VistaAdministrativo extends JFrame {
         return panel;
     }
 
+    // --- MÉTODOS AUXILIARES DE INTERFAZ ---
     private void toggleCamposTarjeta() {
+        // Muestra u oculta los campos de tarjeta según el método de pago elegido
         boolean esTarjeta = cmbMetodoPago.getSelectedItem().toString().equalsIgnoreCase("Tarjeta/Transferencia");
         setCamposTarjetaVisible(esTarjeta);
     }
 
     private void setCamposTarjetaVisible(boolean visible) {
+        // Cambia visibilidad de los campos adicionales
         txtNumTarjeta.setVisible(visible);
         txtTitularTarjeta.setVisible(visible);
         txtCodigoAut.setVisible(visible);
     }
 
+    // --- ACCIÓN: BÚSQUEDA DE FACTURA POR PATENTE ---
     private void buscarFactura(ActionEvent e) {
+        // Valida la patente ingresada, obtiene la orden y luego la factura asociada
         String patente = txtPatentePago.getText().trim();
         if (patente.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Debe ingresar una patente.", "Campo Vacío", JOptionPane.WARNING_MESSAGE);
@@ -300,40 +323,44 @@ public class VistaAdministrativo extends JFrame {
         }
 
         ordenDeTrabajo = contraladorOrdenes.buscarOrdenPorPatente(patente);
-        if (ordenDeTrabajo == null){
-            JOptionPane.showMessageDialog(this, "No se encontro orden asociada a la patente",
-                    "Error", JOptionPane.WARNING_MESSAGE);
+        if (ordenDeTrabajo == null) {
+            JOptionPane.showMessageDialog(this, "No se encontró orden asociada a la patente.", "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        if (!Objects.equals(ordenDeTrabajo.getEstado(), "Reparado")){
-            JOptionPane.showMessageDialog(this, "La orden no se encuentra en estado \"Reparado\"\nNo se puede generar una factura.",
-                    "Error", JOptionPane.WARNING_MESSAGE);
+
+        // Verifica que la orden esté lista para facturar
+        if (!Objects.equals(ordenDeTrabajo.getEstado(), "Reparado")) {
+            JOptionPane.showMessageDialog(this, "La orden no se encuentra en estado \"Reparado\".\nNo se puede generar una factura.", "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         factura = controladorFacturas.obtenerFacturaPorIdOrden(ordenDeTrabajo.getIdOrdenDeTrabajo());
-        if (factura == null){
-            JOptionPane.showMessageDialog(this, "No se pudo obtener la factura asociada a la patente",
-                    "Error", JOptionPane.WARNING_MESSAGE);
+        if (factura == null) {
+            JOptionPane.showMessageDialog(this, "No se pudo obtener la factura asociada a la patente.", "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
+        // Si se encuentra, se cargan los datos en los campos
         JOptionPane.showMessageDialog(this, "Factura encontrada para la patente " + patente + ".\nDatos cargados automáticamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
 
-        txtIdOrdenPago.setText(String.valueOf((factura.getIdFactura())));
+        txtIdOrdenPago.setText(String.valueOf(factura.getIdFactura()));
         txtMontoRecibido.setText(String.valueOf(factura.getTotal()));
     }
 
+    // --- ACCIÓN: CONFIRMACIÓN Y REGISTRO DEL PAGO ---
     private void confirmarPago(ActionEvent e) {
+        // Valida los datos del pago y actualiza tanto la orden como la factura
         String idOrdenStr = txtIdOrdenPago.getText().trim();
         String montoStr = txtMontoRecibido.getText().trim();
         String metodoPago = (String) cmbMetodoPago.getSelectedItem();
 
+        // Validación de campos obligatorios
         if (idOrdenStr.isEmpty() || montoStr.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Debe buscar una factura y completar los datos de pago.", "Datos Incompletos", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
+        // Validación adicional para pagos con tarjeta
         if (metodoPago.equalsIgnoreCase("Tarjeta/Transferencia")) {
             if (txtNumTarjeta.getText().trim().isEmpty() ||
                     txtTitularTarjeta.getText().trim().isEmpty() ||
@@ -343,20 +370,18 @@ public class VistaAdministrativo extends JFrame {
             }
         }
 
-        // Logica de tramitacion y confirmacion de pago con entidad bancaria sí corresponde
-
-        boolean respuesta;
-
-        respuesta = contraladorOrdenes.registrarPagoOrden(ordenDeTrabajo.getIdOrdenDeTrabajo());
-        if (!respuesta){
-            JOptionPane.showMessageDialog(this, "No se actualizar el estado de la orden.", "Error", JOptionPane.WARNING_MESSAGE);
+        // Actualiza el estado de la orden y de la factura en la base de datos
+        boolean respuesta = contraladorOrdenes.registrarPagoOrden(ordenDeTrabajo.getIdOrdenDeTrabajo());
+        if (!respuesta) {
+            JOptionPane.showMessageDialog(this, "No se pudo actualizar el estado de la orden.", "Error", JOptionPane.WARNING_MESSAGE);
         }
 
         respuesta = controladorFacturas.registrarPagoFactura(factura.getIdFactura());
-        if (!respuesta){
-            JOptionPane.showMessageDialog(this, "No se actualizar el estado de la factura.", "Error", JOptionPane.WARNING_MESSAGE);
+        if (!respuesta) {
+            JOptionPane.showMessageDialog(this, "No se pudo actualizar el estado de la factura.", "Error", JOptionPane.WARNING_MESSAGE);
         }
 
+        // Confirmación visual del proceso completo
         JOptionPane.showMessageDialog(this,
                 "Pago registrado correctamente para la orden #" + idOrdenStr +
                         "\nMétodo: " + metodoPago +
@@ -367,7 +392,9 @@ public class VistaAdministrativo extends JFrame {
         limpiarCamposPago();
     }
 
+    // --- LIMPIA LOS CAMPOS DEL FORMULARIO DE PAGO ---
     private void limpiarCamposPago() {
+        // Restablece todos los campos del formulario de pagos
         txtPatentePago.setText("");
         txtIdOrdenPago.setText("");
         txtMontoRecibido.setText("");

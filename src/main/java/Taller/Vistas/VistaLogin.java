@@ -13,17 +13,20 @@ import java.awt.event.ActionListener;
 
 public class VistaLogin extends JFrame {
 
-    ControladorLogin controlador;
-    // COMPONENTES DE SWING
+    // --- CONTROLADOR ASOCIADO ---
+    private final ControladorLogin controladorLogin;
+
+    // --- COMPONENTES DE LA INTERFAZ ---
     private JTextField txtLegajo;
     private JPasswordField txtPassword;
     private JButton btnLogin;
     private JCheckBox chkMostrarPass;
 
-    public VistaLogin(ControladorLogin controlador) {
+    // --- CONSTRUCTOR PRINCIPAL ---
+    public VistaLogin(ControladorLogin controladorLogin) {
         super("Ingreso al Sistema | Taller Mecánico");
+        this.controladorLogin = controladorLogin;
 
-        this.controlador = controlador;
         inicializarComponentes();
 
         this.setSize(900, 650);
@@ -31,21 +34,22 @@ public class VistaLogin extends JFrame {
         this.setLocationRelativeTo(null);
     }
 
+    // --- CONFIGURACIÓN GENERAL DE LA VENTANA Y COMPONENTES ---
     private void inicializarComponentes() {
         JPanel contentPane = new JPanel(new BorderLayout());
         contentPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // --- Título del Formulario
+        // --- TÍTULO PRINCIPAL ---
         JLabel lblTitulo = new JLabel("VALIDACIÓN DE ACCESO", SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
 
-        // Panel Login (GridBagLayout)
+        // --- PANEL PRINCIPAL DEL LOGIN ---
         JPanel pnlLogin = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
 
-        // Legajo
+        // --- CAMPO: LEGAJO ---
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.EAST;
@@ -54,10 +58,12 @@ public class VistaLogin extends JFrame {
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         txtLegajo = new JTextField(20);
+
+        // Se aplica un filtro para permitir solo dígitos
         ((AbstractDocument) txtLegajo.getDocument()).setDocumentFilter(new DigitFilter());
         pnlLogin.add(txtLegajo, gbc);
 
-        // Contraseña
+        // --- CAMPO: CONTRASEÑA ---
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.EAST;
@@ -67,30 +73,29 @@ public class VistaLogin extends JFrame {
         txtPassword = new JPasswordField(20);
         pnlLogin.add(txtPassword, gbc);
 
-        // Checkbox "Mostrar Contraseña"
+        // --- CHECKBOX: MOSTRAR CONTRASEÑA ---
         chkMostrarPass = new JCheckBox("Mostrar Contraseña");
         gbc.gridx = 1;
         gbc.gridy = 2;
-        gbc.gridwidth = 1; // Ocupa solo la segunda columna
-        gbc.anchor = GridBagConstraints.WEST; // Alineado a la izquierda
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.WEST;
 
-        // Funcionamiento Checkbox
+        // Acción: mostrar u ocultar caracteres de la contraseña
         chkMostrarPass.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Si la casilla está marcada, muestra los caracteres ('\0' es el carácter nulo)
+                // '\0' = carácter nulo → muestra texto plano
                 if (chkMostrarPass.isSelected()) {
                     txtPassword.setEchoChar((char) 0);
                 } else {
-                    // Si está desmarcada, oculta con el carácter por defecto (el punto)
+                    // '*' = carácter por defecto para ocultar
                     txtPassword.setEchoChar('*');
                 }
             }
         });
         pnlLogin.add(chkMostrarPass, gbc);
 
-
-        //  Boton de Ingreso
+        // --- BOTÓN DE VALIDACIÓN DE ACCESO ---
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 2;
@@ -102,7 +107,7 @@ public class VistaLogin extends JFrame {
         btnLogin.setForeground(Color.BLACK);
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Funcionamiento Boton de Ingreso
+        // Acción: intenta validar las credenciales ingresadas
         btnLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -112,16 +117,18 @@ public class VistaLogin extends JFrame {
 
         pnlLogin.add(btnLogin, gbc);
 
-        // Ensamblar el Content Pane
+        // --- ENSAMBLADO FINAL DE LA INTERFAZ ---
         contentPane.add(lblTitulo, BorderLayout.NORTH);
         contentPane.add(pnlLogin, BorderLayout.CENTER);
         this.setContentPane(contentPane);
     }
 
+    // --- LÓGICA DE VALIDACIÓN DE CREDENCIALES ---
     private void validarCredenciales() {
         String legajo = txtLegajo.getText();
         String password = new String(txtPassword.getPassword());
 
+        // Validación de campos vacíos
         if (legajo.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Debe completar todos los campos.",
@@ -130,7 +137,8 @@ public class VistaLogin extends JFrame {
             return;
         }
 
-        boolean respuesta = controlador.validarCredenciales(legajo, password);
+        // Se delega la verificación al controlador
+        boolean respuesta = controladorLogin.validarCredenciales(legajo, password);
 
         if (!respuesta) {
             JOptionPane.showMessageDialog(this,
@@ -140,7 +148,6 @@ public class VistaLogin extends JFrame {
         }
     }
 
-    // CLASE INTERNA DE FILTRO (Necesaria para que compile el código del diseño)
     private class DigitFilter extends DocumentFilter {
         @Override
         public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
