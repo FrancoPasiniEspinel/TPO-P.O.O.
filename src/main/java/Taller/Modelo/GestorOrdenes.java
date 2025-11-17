@@ -142,7 +142,7 @@ public class GestorOrdenes {
     public OrdenDeTrabajo obtenerOrdenMecanico(int legajo) {
         try (Connection connection = DriverManager.getConnection(connectionUrl, user, password)) {
             try {
-                PreparedStatement ps = connection.prepareStatement("SELECT TOP 1 * FROM ordenDeTrabajo WHERE legajoMecanicoAsignado = ? AND estado = 'Pendiente' ORDER BY fechaCreacion;");
+                PreparedStatement ps = connection.prepareStatement("SELECT TOP 1 * FROM ordenDeTrabajo WHERE legajoMecanicoAsignado = ? AND estado = 'En_Reparacion' ORDER BY fechaCreacion;");
                 ps.setInt(1, legajo);
                 ResultSet rs = ps.executeQuery();
 
